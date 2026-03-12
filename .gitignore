@@ -1,0 +1,48 @@
+# ── Environment ──
+.env
+.env.local
+.env.production
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# ── Node.js ──
+node_modules/
+.next/
+out/
+.turbo/
+
+# ── Docker ──
+# Don't ignore docker-compose files
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Data (원본 데이터는 Git에 포함하지 않음) ──
+.012_raw_data_report/
+.013_report_case/
+uploads/
+chroma_data/
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Agent / AI ──
+.agent/
+.gemini/

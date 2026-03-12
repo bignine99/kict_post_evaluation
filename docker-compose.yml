@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  # ── Frontend: Next.js 14 ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - posteval-net
+
+  # ── Backend: FastAPI ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - upload_data:/app/uploads
+      - ./.012_raw_data_report:/app/raw_data
+    env_file:
+      - .env
+    depends_on:
+      - chromadb
+    networks:
+      - posteval-net
+
+  # ── Vector Database: ChromaDB ──
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - posteval-net
+
+volumes:
+  upload_data:
+    driver: local
+  chroma_data:
+    driver: local
+
+networks:
+  posteval-net:
+    driver: bridge
