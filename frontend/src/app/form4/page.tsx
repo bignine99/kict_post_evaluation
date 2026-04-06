@@ -259,9 +259,9 @@ export default function Form4Page() {
 
                                                 {field.source_refs?.length > 0 && (
                                                     <div style={{ marginTop: "8px", display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                                                        {field.source_refs.slice(0, 3).map((ref: any, i: number) => (
+                                                        {field.source_refs.map((ref: any, i: number) => (
                                                             <span key={i} style={{ fontSize: "10px", padding: "3px 8px", background: "var(--bg-primary)", borderRadius: "4px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}>
-                                                                <FileText size={10} /> {ref.source_file} p.{ref.page_num}
+                                                                <strong style={{ color: "var(--accent-primary)" }}>[출처 {i+1}]</strong> <FileText size={10} /> {ref.source_file} p.{ref.page_num}
                                                             </span>
                                                         ))}
                                                     </div>

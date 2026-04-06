@@ -281,9 +281,9 @@ export default function Form3Page() {
                                                             <div style={{ marginTop: "12px" }}>
                                                                 <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", fontWeight: 600 }}>출처 ({field.context_chunks_used}개 청크 참조)</div>
                                                                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                                                                    {field.source_refs.slice(0, 3).map((ref: any, i: number) => (
+                                                                    {field.source_refs.map((ref: any, i: number) => (
                                                                         <div key={i} style={{ fontSize: "11px", color: "var(--text-muted)", padding: "6px 8px", background: "var(--bg-primary)", borderRadius: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
-                                                                            <FileText size={12} /> {ref.source_file} · p.{ref.page_num} · 유사도 {Math.round(ref.score * 100)}%
+                                                                            <strong style={{ color: "var(--accent-primary)" }}>[출처 {i+1}]</strong> <FileText size={12} /> {ref.source_file} · p.{ref.page_num} · 유사도 {Math.round(ref.score * 100)}%
                                                                         </div>
                                                                     ))}
                                                                 </div>
