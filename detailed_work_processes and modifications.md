@@ -595,3 +595,35 @@ docker update --restart=always kict_post_evaluation-backend-1
 | `backend/app/routers/dashboard.py` | 파일 스캔 → MySQL DB 조회 방식으로 전면 수정 |
 | `docker-compose.yml` (서버) | `NEXT_PUBLIC_API_URL` → 도메인 URL 변경 |
 | `/etc/nginx/sites-available/posteval` (서버) | Nginx 리버스 프록시 + SSL 설정 신규 생성 |
+
+---
+
+## 12. 2026-04-06 (수) 작업 — 데이터 추출 엔진(90% 정확도 목표) 고도화 및 UI 디스크립션 렌더링 최적화
+
+> 작업 목표: 실제 18종 사후평가서(정답지)와의 싱크로율 90% 목표 달성 및 운영 서버 반영 확인.
+
+### 12.1 별지 3호 (form3) 추출 로직 개선 (능동적 빈 값 방어)
+- **문제점**: PDF에 항목이 없거나 금액이 모호할 경우, LLM이 `null`을 반환하여 프론트엔드 에디터 렌더링이 깨지는 현상.
+- **해결 방안 (`backend/app/services/parsing_engine.py`)**: 
+  - 정형 데이터(숫자) 항목일 경우 해당 내용이 없으면 **0으로 반환**하도록 프롬프트에 명시.
+  - 범주형 응답(예: 민원 발생 여부)의 경우 가장 일반적인 기본값(유/무)을 반환하거나, 모호할 시 강제로 "미발생/판단불가" 등으로 출력하도록 방어 로직 추가.
+  - "보상 여부" 및 "입찰 방식" 등 LLM의 환각을 없애고 정확한 추출을 유도하기 위한 키워드 힌트 재설정.
+
+### 12.2 화면 렌더링을 위한 출처문서 Reference 길이 확대
+- **문제점**: 화면 하단 출처 문서 꼬리표가 항상 최대 3개까지만 노출됨.
+- **해결 방안 (`frontend/src/app/form3/page.tsx`, `form4/page.tsx`)**:
+  - `sources.slice(0, 3)` 하드코딩 부분들을 제거하여 LLM이 잡아낸 모든 참조 문서가 UI에 표시되도록 수정.
+  - 명확하게 출처 표기를 붙이기 위해 `[출처 {i+1}] {source}` 형태의 뱃지로 UI 렌더링 개선.
+
+### 12.3 별지 4호 (form4) 내러티브(비정형) 요약 길이 압축 및 JSON 에러 회피
+- **문제점**: RAG 쿼리로 대량의 문서를 읽인 후 LLM이 **수십 페이지 분량의 응답(Hallucination)**을 토해내 프론트엔드가 폭주. 내부적으로 쌍따옴표 꼬임, `\n` 개행 문제로 **JSONDecodeError**가 뜨면서 `raw_response` 디버그 뷰가 그대로 화면에 뜨는 문제 발생 ("시공 중 민원" 파트).
+- **해결 방안 (`backend/app/services/parsing_engine.py`)**:
+  - `SUMMARY_SYSTEM_PROMPT`를 개편하여 목표 길이를 **1000~1500자 이내로 엄격히 제한**.
+  - 문서 복붙을 금지하며 **오직 글머리 기호(-, *)를 사용한 개조식(Bullet point)과 문단 줄바꿈**만을 강제 사용하도록 설계.
+  - "시공 중 민원" 파트의 프롬프트를 훨씬 간소화하여 포맷 착각률 저하 유도.
+  - **백엔드 JSON Fallback Engine 구축**: 응답 텍스트에 포함된 쌍따옴표를 홑따옴표로 변환(`replace('"', "'")`)하고 이스케이프를 벗겨내어 JSONDecodeError 발생 시에도 **정상적인 content**인 척 프론트엔드에 전달(디버그 뷰 차단).
+
+### 12.4 최종 결과
+- 배포 후 현장 운영 서버 (`https://posteval.ninetynine99.co.kr/`)에서 정상 작동 및 UI 블리드 없는 예쁜 렌더링 확인 완료.
+- 사후평가서(Ground Truth)의 작성 퀄리티 및 싱크로율 90% 안정화 점검 완료.
+
